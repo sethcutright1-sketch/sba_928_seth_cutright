@@ -6,8 +6,12 @@ readme = "README.md"
 authors = [
     { name = "sethcutright1-sketch", email = "sethcutright1@gmail.com" }
 ]
-requires-python = ">=3.14"
-dependencies = []
+requires-python = ">=3.12"
+dependencies = [
+    "kagglehub>=1.0.2",
+    "openpyxl>=3.1.5",
+    "pandas>=3.0.6",
+]
 
 [project.scripts]
 sba-928-seth-cutright = "sba_928_seth_cutright:main"
