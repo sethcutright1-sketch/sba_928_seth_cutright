@@ -8,9 +8,15 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
+    "accelerate>=1.15.0",
+    "datasets>=5.0.1",
     "kagglehub>=1.0.2",
     "openpyxl>=3.1.5",
     "pandas>=3.0.6",
+    "peft>=0.21.2",
+    "torch>=2.14.1",
+    "transformers>=5.18.0",
+    "trl>=1.14.1",
 ]
 
 [project.scripts]
@@ -19,3 +25,11 @@ sba-928-seth-cutright = "sba_928_seth_cutright:main"
 [build-system]
 requires = ["uv_build>=0.12.17,<0.13.0"]
 build-backend = "uv_build"
+
+[[tool.uv.index]]
+name = "pytorch-cu132"
+url = "https://download.pytorch.org/whl/cu132"
+explicit = true
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cu132" } ]
