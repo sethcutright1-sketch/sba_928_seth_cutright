@@ -3,6 +3,8 @@
 import json                               
 from pathlib import Path                    
 from sba_928_seth_cutright.prepare_data import prepare_shopping   
+from sba_928_seth_cutright.load_data import load_competitors
+
 
 SYSTEM_PROMPT = (
     "You are a market research analyst. Answer using only the shopping data. "
@@ -44,6 +46,21 @@ def answer_mt1(df):
         pieces.append(f"{region_sandals:,} sandals sold in the {region} out of {region_total:,} customers ({region_rate:.1f}%).")
     return " ".join(pieces) + " Due to the small number of sandals buyers counts (about 24-52 per region), the differences are small and could be chance."
 
+
+def answer_ca3(adidas, nike):
+    adidas_discount = (adidas["discount"] > 0).sum()
+    nike_discount = (nike["discount"] > 0).sum()
+    adidas_total = len(adidas)
+    nike_total = len(nike)
+    adidas_rate = adidas_discount / adidas_total * 100
+    nike_rate = nike_discount / nike_total * 100
+    return (
+        f"{adidas_discount:,} out of {adidas_total:,} Adidas products are discounted ({adidas_rate:.1f}%). "
+        f"{nike_discount:,} out of {nike_total:,} Nike products are discounted ({nike_rate:.1f}%). "
+        "Adidas has 4x more products, so compare the percentages and not the counts. It is also one day's snapshot (April 2020) during COVID so it may not show normal pricing."
+    )
+
+
 def make_example(question, answer):             
     return {
         "messages": [                  # the key the trainer looks for
@@ -52,8 +69,10 @@ def make_example(question, answer):
             {"role": "assistant", "content": answer},   # the answer (a parameter)
         ]
     }
+
 if __name__ == "__main__":
     df = prepare_shopping()                      #  load once
+    adidas, nike = load_competitors()
     my_answer = answer_sandals(df)             #  compute once
 
     cb2_questions = [                        
@@ -75,6 +94,11 @@ if __name__ == "__main__":
     ]
 
 
+    ca3_questions = [
+        "What percentage of each brand's products are discounted?",
+        "What proportion of items within each brand catalog are currently on sale?",
+        "How does the ratio of discounted merchandise compare across each brand's total inventory?",
+    ]
     DATA_DIR.mkdir(exist_ok=True)         # 4. makes the folder (no error if it exists)
 
     with open(DATA_DIR / "train.jsonl", "w", encoding="utf-8") as f:   # 5. write
@@ -90,5 +114,9 @@ if __name__ == "__main__":
             row = make_example(q, answer_mt1(df))
             f.write(json.dumps(row) + "\n")
 
-    print("wrote", len(cb2_questions) + len(cb3_questions) + len(mt1_questions), "lines")
+        for q in ca3_questions:
+            row = make_example(q, answer_ca3(adidas, nike))
+            f.write(json.dumps(row) + "\n")
+
+    print("wrote", len(cb2_questions) + len(cb3_questions) + len(mt1_questions) + len(ca3_questions), "lines")
 
