@@ -58,6 +58,8 @@ if __name__ == "__main__":
             "Did more men or women buy sandals?",
             "Of all customers who bought sandals, what proportion were men versus women?",
         ]
+
+    
     DATA_DIR.mkdir(exist_ok=True)         # 4. makes the folder (no error if it exists)
 
     with open(DATA_DIR / "train.jsonl", "w", encoding="utf-8") as f:   # 5. write
