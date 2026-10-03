@@ -34,6 +34,15 @@ def answer_cb3(df):
         
     )
 
+def answer_mt1(df):
+    pieces = [] 
+    for region in ["Northeast", "South", "West", "Midwest"]:
+        region_data = df[df["Region"] == region]
+        region_sandals = (region_data["Item Purchased"] == "Sandals").sum()
+        region_total = len(region_data)
+        region_rate = region_sandals / region_total * 100
+        pieces.append(f"{region_sandals:,} sandals sold in the {region} out of {region_total:,} customers ({region_rate:.1f}%).")
+    return " ".join(pieces) + " Due to the small number of sandals buyers counts (about 24-52 per region), the differences are small and could be chance."
 
 def make_example(question, answer):             
     return {
@@ -59,7 +68,13 @@ if __name__ == "__main__":
             "Of all customers who bought sandals, what proportion were men versus women?",
         ]
 
-    
+    mt1_questions = [
+            "What percentage of customers in each region bought sandals?",
+            "What is the regional purchase rate for sandals as a proportion of total customers?",
+            "In which region are customers most likely to buy sandals?"
+    ]
+
+
     DATA_DIR.mkdir(exist_ok=True)         # 4. makes the folder (no error if it exists)
 
     with open(DATA_DIR / "train.jsonl", "w", encoding="utf-8") as f:   # 5. write
@@ -71,5 +86,9 @@ if __name__ == "__main__":
             row = make_example(q, answer_cb3(df))
             f.write(json.dumps(row) + "\n")
 
-    print("wrote", len(cb2_questions) + len(cb3_questions), "lines")
+        for q in mt1_questions:
+            row = make_example(q, answer_mt1(df))
+            f.write(json.dumps(row) + "\n")
+
+    print("wrote", len(cb2_questions) + len(cb3_questions) + len(mt1_questions), "lines")
 
