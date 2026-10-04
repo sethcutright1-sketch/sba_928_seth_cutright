@@ -1,6 +1,8 @@
 #import the load_shopping function from the load_data.py file in the sba_928_seth_cutright package
-from sba_928_seth_cutright.load_data import load_shopping
 import pandas as pd
+
+from sba_928_seth_cutright.load_data import load_shopping
+
 AGE_BINS = [17, 29, 39, 49, 59, 70]
 AGE_LABELS = ["18-29", "30-39", "40-49", "50-59", "60-70"]
 STATE_TO_REGION = {

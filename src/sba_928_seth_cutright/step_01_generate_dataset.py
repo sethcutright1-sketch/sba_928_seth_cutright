@@ -1,17 +1,20 @@
+"""Generate the training dataset for the SBA 928 Seth Cutright project."""
 
+from __future__ import annotations
 
-import json                               
-from pathlib import Path                    
-from sba_928_seth_cutright.prepare_data import prepare_shopping   
+import json
+import logging
+from pathlib import Path
+
 from sba_928_seth_cutright.load_data import load_competitors
-
+from sba_928_seth_cutright.prepare_data import prepare_shopping
 
 SYSTEM_PROMPT = (
     "You are a market research analyst. Answer using only the shopping data. "
     "If the shopping data does not contain the answer, say so."
 )
 DATA_DIR = Path("data")
-
+LOGGER = logging.getLogger(__name__)
 
 def answer_sandals(df):
     sandals = (df["Item Purchased"] == "Sandals").sum()
@@ -70,7 +73,9 @@ def make_example(question, answer):
         ]
     }
 
-if __name__ == "__main__":
+def main() -> None:
+    """Build train.jsonl from the four prompt groups."""
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     df = prepare_shopping()                      #  load once
     adidas, nike = load_competitors()
     my_answer = answer_sandals(df)             #  compute once
@@ -118,5 +123,8 @@ if __name__ == "__main__":
             row = make_example(q, answer_ca3(adidas, nike))
             f.write(json.dumps(row) + "\n")
 
-    print("wrote", len(cb2_questions) + len(cb3_questions) + len(mt1_questions) + len(ca3_questions), "lines")
+    LOGGER.info("wrote %d lines", len(cb2_questions) + len(cb3_questions) + len(mt1_questions) + len(ca3_questions))
 
+
+if __name__ == "__main__":
+    main()
