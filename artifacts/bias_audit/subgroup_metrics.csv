@@ -1,0 +1,7 @@
+group,records,base_correct,tuned_correct,train_examples
+topic=cb2,9,3,9,63
+topic=cb3,12,0,6,51
+topic=mt1,3,0,1,63
+cb3_conclusion=women,6,0,0,9
+cb3_conclusion=men,3,0,3,15
+cb3_conclusion=similar,3,0,3,27

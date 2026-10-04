@@ -1,0 +1,44 @@
+[
+  {
+    "group": "topic=cb2",
+    "records": 9,
+    "base_correct": 3,
+    "tuned_correct": 9,
+    "train_examples": 63
+  },
+  {
+    "group": "topic=cb3",
+    "records": 12,
+    "base_correct": 0,
+    "tuned_correct": 6,
+    "train_examples": 51
+  },
+  {
+    "group": "topic=mt1",
+    "records": 3,
+    "base_correct": 0,
+    "tuned_correct": 1,
+    "train_examples": 63
+  },
+  {
+    "group": "cb3_conclusion=women",
+    "records": 6,
+    "base_correct": 0,
+    "tuned_correct": 0,
+    "train_examples": 9
+  },
+  {
+    "group": "cb3_conclusion=men",
+    "records": 3,
+    "base_correct": 0,
+    "tuned_correct": 3,
+    "train_examples": 15
+  },
+  {
+    "group": "cb3_conclusion=similar",
+    "records": 3,
+    "base_correct": 0,
+    "tuned_correct": 3,
+    "train_examples": 27
+  }
+]
