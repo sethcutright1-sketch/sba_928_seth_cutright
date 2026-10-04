@@ -1,0 +1,17 @@
+{
+  "minimal": {
+    "records": 12,
+    "correct": 0,
+    "avg_percent_recall": 0.4166666666666667
+  },
+  "structured": {
+    "records": 12,
+    "correct": 1,
+    "avg_percent_recall": 0.3333333333333333
+  },
+  "grounded": {
+    "records": 12,
+    "correct": 0,
+    "avg_percent_recall": 0.5416666666666666
+  }
+}
