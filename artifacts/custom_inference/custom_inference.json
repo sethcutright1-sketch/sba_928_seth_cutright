@@ -1,0 +1,8 @@
+{
+  "base_model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "adapter": "artifacts\\models\\qwen-sba-928\\final",
+  "context": "Subscribers: 42 of 1,053 bought Boots (4.0%) | Non-subscribers: 102 of 2,847 bought Boots (3.6%)",
+  "question": "Are subscribers or non-subscribers more likely to buy Boots?",
+  "reply": "Conclusion: Boots is purchased at a similar rate by customers and buyers. Customers: 42 of 1,053 bought Boots (4.0%). Non-subscribers: 102 of 2,847 bought Boots (3.6%). There are about 2x more subscribers than non-subscribers in the data.",
+  "note": "Model prediction; requires human review."
+}
