@@ -16,43 +16,64 @@ SYSTEM_PROMPT = (
 DATA_DIR = Path("data")
 LOGGER = logging.getLogger(__name__)
 
-def answer_sandals(df):
-    sandals = (df["Item Purchased"] == "Sandals").sum()
+def answer_cb2(df, item):
+    buyer = (df["Item Purchased"] == item).sum()
     everyone = len(df)
-    share = sandals / everyone * 100
-    context = f"Sandal buyers: {sandals:,} | Total customers: {everyone:,} | Share: {share:.1f}%"
-    target = f"{sandals:,} sandal buyers out of {everyone:,} customers ({share:.1f}%)."
+    share = buyer / everyone * 100
+    context = f"{item} buyers: {buyer:,} | Total customers: {everyone:,} | Share: {share:.1f}%"
+    target = f"{buyer:,} {item} buyers out of {everyone:,} customers ({share:.1f}%)."
     return context, target
 
-def answer_cb3(df):
+def answer_cb3(df, item):
     men = df[df["Gender"] == "Male"]
     women = df[df["Gender"] == "Female"]
-    men_sandals = (men["Item Purchased"] == "Sandals").sum()
-    women_sandals = (women["Item Purchased"] == "Sandals").sum()
+    men_buyers = (men["Item Purchased"] == item).sum()
+    women_buyers = (women["Item Purchased"] == item).sum()
 
     men_total = len(men)
     women_total = len(women)
-    men_rate = men_sandals / men_total * 100
-    women_rate = women_sandals / women_total * 100
+    men_rate = men_buyers / men_total * 100
+    women_rate = women_buyers / women_total * 100
+    gap = women_rate - men_rate
+    if abs(gap) < 0.5:
+        conclusion = f"{item} is purchased at a similar rate by men and women."
+    elif women_rate > men_rate:
+        conclusion = f"Women are more likely to buy {item}."
+    else:
+        conclusion = f"Men are more likely to buy {item}."
     context = (
-        f"Men: {men_sandals:,} of {men_total:,} bought sandals ({men_rate:.1f}%) | "
-        f"Women: {women_sandals:,} of {women_total:,} bought sandals ({women_rate:.1f}%)"
+        f"Men: {men_buyers:,} of {men_total:,} bought {item} ({men_rate:.1f}%) | "
+        f"Women: {women_buyers:,} of {women_total:,} bought {item} ({women_rate:.1f}%)"
     )
-    target = f"Women are more likely to buy sandals ({women_rate:.1f}% vs. {men_rate:.1f}%). There are about 2x more men in the data than women so the overall sandal purchase count is skewed towards men."
+    target = (
+        f"Conclusion: {conclusion} "
+        f"Men: {men_buyers:,} of {men_total:,} bought {item} ({men_rate:.1f}%) | "
+        f"Women: {women_buyers:,} of {women_total:,} bought {item} ({women_rate:.1f}%). "
+        f"There are about 2x more men in the data than women so the overall {item} purchase count is skewed towards men."
+    
+    )
     return context, target
 
-def answer_mt1(df):
-    pieces = [] 
+def answer_mt1(df, item):
+    pieces = []
+    results = []
+    counts = []
     for region in ["Northeast", "South", "West", "Midwest"]:
         region_data = df[df["Region"] == region]
-        region_sandals = (region_data["Item Purchased"] == "Sandals").sum()
+        region_buyers = (region_data["Item Purchased"] == item).sum()
         region_total = len(region_data)
-        region_rate = region_sandals / region_total * 100
-        pieces.append(f"{region}: {region_sandals:,} of {region_total:,} bought sandals ({region_rate:.1f}%)")
+        region_rate = region_buyers / region_total * 100
+        pieces.append(f"{region}: {region_buyers:,} of {region_total:,} bought {item} ({region_rate:.1f}%)")
+        results.append(region_rate)
+        counts.append(region_buyers)
     context = " | ".join(pieces)
+    top_rate = max(results)
+    low_rate = min(results)
+    top_region = ["Northeast", "South", "West", "Midwest"][results.index(top_rate)]
+    low_region = ["Northeast", "South", "West", "Midwest"][results.index(low_rate)]
     target = (
-        "The Midwest has the highest rate (5.5%) and the West the lowest (3.4%). "
-        "Due to the small number of sandal buyers (about 24-52 per region), the differences are small and could be chance."
+        f"The {top_region} has the highest rate ({top_rate:.1f}%) and the {low_region} the lowest ({low_rate:.1f}%). "
+        f"Due to the small number of {item} buyers (about {min(counts):,}-{max(counts):,} per region), the differences are small and could be chance."
     )
     return context, target
 
@@ -97,21 +118,21 @@ def main() -> None:
     adidas, nike = load_competitors()
 
     cb2_questions = [                        
-            "how many sandals were sold?",
-            "what is the total number of sandals sold?",
-            "how many customers bought sandals?",
+            "how many {item} were sold?",
+            "what is the total number of {item} sold?",
+            "how many customers bought {item}?",
         ]
 
     cb3_questions = [                        
-            "What percentage of men, and what percentage of women, buy sandals?",
-            "Did more men or women buy sandals?",
-            "Of all customers who bought sandals, what proportion were men versus women?",
+            "What percentage of men, and what percentage of women, buy {item}?",
+            "Did more men or women buy {item}?",
+            "Of all customers who bought {item}, what proportion were men versus women?",
         ]
 
     mt1_questions = [
-            "What percentage of customers in each region bought sandals?",
-            "What is the regional purchase rate for sandals as a proportion of total customers?",
-            "In which region are customers most likely to buy sandals?"
+            "What percentage of customers in each region bought {item}?",
+            "What is the regional purchase rate for {item} as a proportion of total customers?",
+            "In which region are customers most likely to buy {item}?"
     ]
 
 
@@ -122,11 +143,12 @@ def main() -> None:
     ]
 
     groups = [
-        (cb2_questions, answer_sandals(df)),
-        (cb3_questions, answer_cb3(df)),
-        (mt1_questions, answer_mt1(df)),
-        (ca3_questions, answer_ca3(adidas, nike)),  
+        (ca3_questions, answer_ca3(adidas, nike)),
     ]
+    for item in df["Item Purchased"].unique():
+        groups.append(([t.format(item=item) for t in cb2_questions], answer_cb2(df, item)))
+        groups.append(([t.format(item=item) for t in cb3_questions], answer_cb3(df, item)))
+        groups.append(([t.format(item=item) for t in mt1_questions], answer_mt1(df, item)))
     DATA_DIR.mkdir(exist_ok=True)         # 4. makes the folder (no error if it exists)
 
     with open(DATA_DIR / "train.jsonl", "w", encoding="utf-8") as f:   # 5. write
