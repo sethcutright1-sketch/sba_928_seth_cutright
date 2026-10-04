@@ -10,8 +10,8 @@ from sba_928_seth_cutright.load_data import load_competitors
 from sba_928_seth_cutright.prepare_data import prepare_shopping
 
 SYSTEM_PROMPT = (
-    "You are a market research analyst. Answer using only the shopping data. "
-    "If the shopping data does not contain the answer, say so."
+    "You are a market research analyst. Answer using only the data provided. "
+    "If the data does not contain the answer, say so."
 )
 DATA_DIR = Path("data")
 LOGGER = logging.getLogger(__name__)
@@ -20,7 +20,9 @@ def answer_sandals(df):
     sandals = (df["Item Purchased"] == "Sandals").sum()
     everyone = len(df)
     share = sandals / everyone * 100
-    return f"{sandals:,} sandal buyers out of {everyone:,} customers ({share:.1f}%)."
+    context = f"Sandal buyers: {sandals:,} | Total customers: {everyone:,} | Share: {share:.1f}%"
+    target = f"{sandals:,} sandal buyers out of {everyone:,} customers ({share:.1f}%)."
+    return context, target
 
 def answer_cb3(df):
     men = df[df["Gender"] == "Male"]
@@ -32,12 +34,12 @@ def answer_cb3(df):
     women_total = len(women)
     men_rate = men_sandals / men_total * 100
     women_rate = women_sandals / women_total * 100
-    return (
-        f"{men_sandals:,} men bought sandals out of {men_total:,} men ({men_rate:.1f}%), "
-        f"{women_sandals:,} women bought sandals out of {women_total:,} women ({women_rate:.1f}%). "
-        "There are about 2x more men in the data than women so the overall sandal purchase count is skewed towards men."
-        
+    context = (
+        f"Men: {men_sandals:,} of {men_total:,} bought sandals ({men_rate:.1f}%) | "
+        f"Women: {women_sandals:,} of {women_total:,} bought sandals ({women_rate:.1f}%)"
     )
+    target = f"Women are more likely to buy sandals ({women_rate:.1f}% vs. {men_rate:.1f}%). There are about 2x more men in the data than women so the overall sandal purchase count is skewed towards men."
+    return context, target
 
 def answer_mt1(df):
     pieces = [] 
@@ -46,8 +48,13 @@ def answer_mt1(df):
         region_sandals = (region_data["Item Purchased"] == "Sandals").sum()
         region_total = len(region_data)
         region_rate = region_sandals / region_total * 100
-        pieces.append(f"{region_sandals:,} sandals sold in the {region} out of {region_total:,} customers ({region_rate:.1f}%).")
-    return " ".join(pieces) + " Due to the small number of sandals buyers counts (about 24-52 per region), the differences are small and could be chance."
+        pieces.append(f"{region}: {region_sandals:,} of {region_total:,} bought sandals ({region_rate:.1f}%)")
+    context = " | ".join(pieces)
+    target = (
+        "The Midwest has the highest rate (5.5%) and the West the lowest (3.4%). "
+        "Due to the small number of sandal buyers (about 24-52 per region), the differences are small and could be chance."
+    )
+    return context, target
 
 
 def answer_ca3(adidas, nike):
@@ -57,20 +64,30 @@ def answer_ca3(adidas, nike):
     nike_total = len(nike)
     adidas_rate = adidas_discount / adidas_total * 100
     nike_rate = nike_discount / nike_total * 100
-    return (
-        f"{adidas_discount:,} out of {adidas_total:,} Adidas products are discounted ({adidas_rate:.1f}%). "
-        f"{nike_discount:,} out of {nike_total:,} Nike products are discounted ({nike_rate:.1f}%). "
-        "Adidas has 4x more products, so compare the percentages and not the counts. It is also one day's snapshot (April 2020) during COVID so it may not show normal pricing."
+    context = (
+        f"Adidas: {adidas_discount:,} of {adidas_total:,} products discounted ({adidas_rate:.1f}%) | "
+        f"Nike: {nike_discount:,} of {nike_total:,} products discounted ({nike_rate:.1f}%)"
     )
+    target = (
+        "Adidas has a higher proportion of discounted products compared to Nike. "
+        f"Adidas: {adidas_discount:,} of {adidas_total:,} products discounted ({adidas_rate:.1f}%) | "
+        f"Nike: {nike_discount:,} of {nike_total:,} products discounted ({nike_rate:.1f}%). "
+        "Adidas has more products overall, so the comparison should focus on percentages rather than raw counts. "
+        "It is also one day's snapshot (April 2020) during COVID so it may not show normal pricing."
+    )
+    return context, target
 
 
-def make_example(question, answer):             
+def make_example(question, context, answer):             
     return {
         "messages": [                  # the key the trainer looks for
             {"role": "system", "content": SYSTEM_PROMPT},   # the instructions (your constant)
-            {"role": "user", "content": question},   # the question (a parameter)
+            {"role": "user", "content": f"Data: {context}\n\nQuestion: {question}"},   # the question (a parameter)
             {"role": "assistant", "content": answer},   # the answer (a parameter)
-        ]
+                ],
+        "instruction": question,
+        "context": context,
+        "target": answer,
     }
 
 def main() -> None:
@@ -108,7 +125,7 @@ def main() -> None:
         (cb2_questions, answer_sandals(df)),
         (cb3_questions, answer_cb3(df)),
         (mt1_questions, answer_mt1(df)),
-        (ca3_questions, answer_ca3(adidas, nike)),
+        (ca3_questions, answer_ca3(adidas, nike)),  
     ]
     DATA_DIR.mkdir(exist_ok=True)         # 4. makes the folder (no error if it exists)
 
@@ -116,7 +133,7 @@ def main() -> None:
         count = 0
         for questions, answers in groups:
             for q in questions:
-                row = make_example(q, answers)
+                row = make_example(q, answers[0], answers[1])
                 f.write(json.dumps(row) + "\n")
                 count += 1
     LOGGER.info("wrote %d lines", count)
