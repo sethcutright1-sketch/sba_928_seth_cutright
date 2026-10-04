@@ -78,7 +78,6 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     df = prepare_shopping()                      #  load once
     adidas, nike = load_competitors()
-    my_answer = answer_sandals(df)             #  compute once
 
     cb2_questions = [                        
             "how many sandals were sold?",
@@ -104,26 +103,23 @@ def main() -> None:
         "What proportion of items within each brand catalog are currently on sale?",
         "How does the ratio of discounted merchandise compare across each brand's total inventory?",
     ]
+
+    groups = [
+        (cb2_questions, answer_sandals(df)),
+        (cb3_questions, answer_cb3(df)),
+        (mt1_questions, answer_mt1(df)),
+        (ca3_questions, answer_ca3(adidas, nike)),
+    ]
     DATA_DIR.mkdir(exist_ok=True)         # 4. makes the folder (no error if it exists)
 
     with open(DATA_DIR / "train.jsonl", "w", encoding="utf-8") as f:   # 5. write
-        for q in cb2_questions:
-            row = make_example(q, my_answer)
-            f.write(json.dumps(row) + "\n")
-
-        for q in cb3_questions:
-            row = make_example(q, answer_cb3(df))
-            f.write(json.dumps(row) + "\n")
-
-        for q in mt1_questions:
-            row = make_example(q, answer_mt1(df))
-            f.write(json.dumps(row) + "\n")
-
-        for q in ca3_questions:
-            row = make_example(q, answer_ca3(adidas, nike))
-            f.write(json.dumps(row) + "\n")
-
-    LOGGER.info("wrote %d lines", len(cb2_questions) + len(cb3_questions) + len(mt1_questions) + len(ca3_questions))
+        count = 0
+        for questions, answers in groups:
+            for q in questions:
+                row = make_example(q, answers)
+                f.write(json.dumps(row) + "\n")
+                count += 1
+    LOGGER.info("wrote %d lines", count)
 
 
 if __name__ == "__main__":
