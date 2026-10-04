@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from peft import PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 MODEL_NAME = "Qwen/Qwen2.5-0.5B-Instruct"
@@ -10,6 +11,13 @@ def load_model(model_name):
     """Load the model and tokenizer for the given model name."""
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForCausalLM.from_pretrained(model_name, dtype="auto", device_map="auto")
+    return model, tokenizer
+
+
+def load_tuned_model(model_name, adapter_dir):
+    """Load the tuned model with the specified adapter."""
+    model, tokenizer = load_model(model_name)
+    model = PeftModel.from_pretrained(model, adapter_dir)
     return model, tokenizer
 
 
