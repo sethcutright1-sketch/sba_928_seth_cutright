@@ -23,7 +23,13 @@ def main() -> None:
     with open(CONFIG_PATH, encoding="utf-8") as f:
         config = json.load(f)
 
-    dataset = load_dataset("json", data_files={"train": config["train_file"], "validation": config["validation_file"]})
+    dataset = load_dataset(
+        "json",
+        data_files={
+            "train": config["train_file"],
+            "validation": config["validation_file"],
+        },
+    )
     dataset = dataset.select_columns(["messages"])
 
     model, tokenizer = load_model(config["model_name"])
@@ -58,16 +64,22 @@ def main() -> None:
     )
     trainer.train()
 
-
     final_dir = Path(config["output_dir"]) / "final"
     trainer.save_model(final_dir)
     tokenizer.save_pretrained(final_dir)
 
-    with open(Path(config["output_dir"]) / "training_config_resolved.json", "w", encoding="utf-8") as f:
+    with open(
+        Path(config["output_dir"]) / "training_config_resolved.json",
+        "w",
+        encoding="utf-8",
+    ) as f:
         json.dump(config, f, indent=2)
-    with open(Path(config["output_dir"]) / "training_summary.json", "w", encoding="utf-8") as f:
+    with open(
+        Path(config["output_dir"]) / "training_summary.json", "w", encoding="utf-8"
+    ) as f:
         json.dump(trainer.state.log_history, f, indent=2)
     LOGGER.info("saved adapter to %s", final_dir)
+
 
 if __name__ == "__main__":
     main()

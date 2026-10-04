@@ -1,4 +1,4 @@
-#import the load_shopping function from the load_data.py file in the sba_928_seth_cutright package
+# import the load_shopping function from the load_data.py file in the sba_928_seth_cutright package
 import pandas as pd
 
 from sba_928_seth_cutright.load_data import load_shopping
@@ -62,6 +62,8 @@ STATE_TO_REGION = {
     "Oregon": "West",
     "Washington": "West",
 }
+
+
 def prepare_shopping():
     df = load_shopping()
     df["Age Group"] = pd.cut(df["Age"], bins=AGE_BINS, labels=AGE_LABELS)
@@ -76,4 +78,3 @@ if __name__ == "__main__":
     print(prepared_df["Age Group"].isna().sum())
     print(prepared_df["Region"].isna().sum())
     print(prepared_df["Region"].value_counts())
-         

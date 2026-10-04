@@ -1,0 +1,7 @@
+{
+  "test_records": 24,
+  "base_correct": 3,
+  "tuned_correct": 16,
+  "base_avg_percent_recall": 0.5416666666666666,
+  "tuned_avg_percent_recall": 1.0
+}

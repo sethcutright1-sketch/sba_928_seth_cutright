@@ -30,7 +30,9 @@ def main() -> None:
         for record in records:
             versions = build_prompt_variants(record["context"], record["instruction"])
             for variant_name, prompt in versions.items():
-                reply = generate_reply(model, tokenizer, [{"role": "user", "content": prompt}])
+                reply = generate_reply(
+                    model, tokenizer, [{"role": "user", "content": prompt}]
+                )
                 row = {
                     "record_id": record["record_id"],
                     "variant": variant_name,
@@ -38,11 +40,12 @@ def main() -> None:
                     "context": record["context"],
                     "instruction": record["instruction"],
                     "prompt": prompt,
-                    "topic": record["topic"],  
+                    "topic": record["topic"],
                     "target": record["target"],
                 }
                 f.write(json.dumps(row) + "\n")
             LOGGER.info("done %s", record["record_id"])
+
 
 if __name__ == "__main__":
     main()

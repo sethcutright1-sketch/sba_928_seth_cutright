@@ -8,6 +8,7 @@
    mexwell/adidas-x-nike: two CSVs scraped from the Adidas and Nike India
    online stores in April 2020. Prices are in Indian rupees (INR).
 """
+
 from pathlib import Path
 
 import kagglehub
