@@ -1,7 +1,7 @@
 {
-  "test_records": 24,
-  "base_correct": 3,
-  "tuned_correct": 16,
-  "base_avg_percent_recall": 0.5416666666666666,
-  "tuned_avg_percent_recall": 1.0
+  "test_records": 96,
+  "base_correct": 7,
+  "tuned_correct": 77,
+  "base_avg_percent_recall": 0.3645833333333333,
+  "tuned_avg_percent_recall": 0.9739583333333334
 }

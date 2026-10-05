@@ -2,43 +2,57 @@
   {
     "group": "topic=cb2",
     "records": 9,
-    "base_correct": 3,
+    "base_correct": 7,
     "tuned_correct": 9,
-    "train_examples": 63
+    "train_examples": 60
   },
   {
     "group": "topic=cb3",
-    "records": 12,
+    "records": 9,
     "base_correct": 0,
-    "tuned_correct": 6,
-    "train_examples": 51
+    "tuned_correct": 9,
+    "train_examples": 60
   },
   {
     "group": "topic=mt1",
-    "records": 3,
+    "records": 9,
     "base_correct": 0,
-    "tuned_correct": 1,
-    "train_examples": 63
+    "tuned_correct": 5,
+    "train_examples": 60
   },
   {
-    "group": "cb3_conclusion=women",
-    "records": 6,
+    "group": "topic=cb3_region",
+    "records": 30,
     "base_correct": 0,
-    "tuned_correct": 0,
-    "train_examples": 9
+    "tuned_correct": 23,
+    "train_examples": 240
   },
   {
-    "group": "cb3_conclusion=men",
-    "records": 3,
+    "group": "topic=cb3_age",
+    "records": 39,
     "base_correct": 0,
-    "tuned_correct": 3,
-    "train_examples": 15
+    "tuned_correct": 31,
+    "train_examples": 300
   },
   {
-    "group": "cb3_conclusion=similar",
-    "records": 3,
+    "group": "cb3_family_conclusion=women",
+    "records": 24,
     "base_correct": 0,
-    "tuned_correct": 3,
-    "train_examples": 27
+    "tuned_correct": 21,
+    "train_examples": 210
+  },
+  {
+    "group": "cb3_family_conclusion=men",
+    "records": 27,
+    "base_correct": 0,
+    "tuned_correct": 23,
+    "train_examples": 204
+  },
+  {
+    "group": "cb3_family_conclusion=similar",
+    "records": 27,
+    "base_correct": 0,
+    "tuned_correct": 19,
+    "train_examples": 186
   }
 ]
