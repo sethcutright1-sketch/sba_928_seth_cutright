@@ -95,6 +95,8 @@ Full analysis: see the report in `docs/`.
 - Small test groups
 - Likely synthetic data
 - No competitor test question
+- The caveat sentence is copied from the training answers, even when it is wrong
+- Close calls near the 0.5-point "similar" threshold
 
 ## AI assistance
 
