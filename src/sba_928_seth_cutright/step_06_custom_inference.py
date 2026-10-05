@@ -24,13 +24,22 @@ def main() -> None:
     """Main function to perform custom inference."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     parser = argparse.ArgumentParser(description="Ask the analysis bot one question.")
-    parser.add_argument("--question", default=DEFAULT_QUESTION, help="Which question to ask")
-    parser.add_argument("--context", default=DEFAULT_CONTEXT, help="The context data to provide to the model")
+    parser.add_argument(
+        "--question", default=DEFAULT_QUESTION, help="Which question to ask"
+    )
+    parser.add_argument(
+        "--context",
+        default=DEFAULT_CONTEXT,
+        help="The context data to provide to the model",
+    )
     args = parser.parse_args()
 
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": f"Data: {args.context}\n\nQuestion: {args.question}"},
+        {
+            "role": "user",
+            "content": f"Data: {args.context}\n\nQuestion: {args.question}",
+        },
     ]
     model, tokenizer = load_tuned_model(model_name=MODEL_NAME, adapter_dir=ADAPTER_DIR)
     reply = generate_reply(model, tokenizer, messages)

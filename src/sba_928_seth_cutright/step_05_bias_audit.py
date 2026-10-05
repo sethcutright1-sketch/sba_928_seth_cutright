@@ -36,30 +36,56 @@ def main() -> None:
         train = [json.loads(line) for line in f]
 
     groups = []
-    for topic in ["cb2", "cb3", "mt1"]:
+    for topic in ["cb2", "cb3", "mt1", "cb3_region", "cb3_age"]:
         topic_rows = [r for r in rows if r["topic"] == topic]
-        groups.append({
-            "group": f"topic={topic}",
-            "records": len(topic_rows),
-            "base_correct": sum(r["base_correct"] for r in topic_rows),
-            "tuned_correct": sum(r["tuned_correct"] for r in topic_rows),
-            "train_examples": len([t for t in train if t["topic"] == topic]),
-        })
-    
+        groups.append(
+            {
+                "group": f"topic={topic}",
+                "records": len(topic_rows),
+                "base_correct": sum(r["base_correct"] for r in topic_rows),
+                "tuned_correct": sum(r["tuned_correct"] for r in topic_rows),
+                "train_examples": len([t for t in train if t["topic"] == topic]),
+            }
+        )
+
     for kind in ["women", "men", "similar"]:
-        kind_rows = [r for r in rows if r["topic"] == "cb3" and conclusion_type(r["target"]) == kind]
-        groups.append({
-            "group": f"cb3_conclusion={kind}",
-            "records": len(kind_rows),
-            "base_correct": sum(r["base_correct"] for r in kind_rows),
-            "tuned_correct": sum(r["tuned_correct"] for r in kind_rows),
-            "train_examples": len([t for t in train if t["topic"] == "cb3" and conclusion_type(t["target"]) == kind]),
-        })
+        kind_rows = [
+            r
+            for r in rows
+            if (
+                r["topic"] == "cb3"
+                or r["topic"] == "cb3_region"
+                or r["topic"] == "cb3_age"
+            )
+            and conclusion_type(r["target"]) == kind
+        ]
+        groups.append(
+            {
+                "group": f"cb3_family_conclusion={kind}",
+                "records": len(kind_rows),
+                "base_correct": sum(r["base_correct"] for r in kind_rows),
+                "tuned_correct": sum(r["tuned_correct"] for r in kind_rows),
+                "train_examples": len(
+                    [
+                        t
+                        for t in train
+                        if (
+                            t["topic"] == "cb3"
+                            or t["topic"] == "cb3_region"
+                            or t["topic"] == "cb3_age"
+                        )
+                        and conclusion_type(t["target"]) == kind
+                    ]
+                ),
+            }
+        )
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     pd.DataFrame(groups).to_csv(OUT_DIR / "subgroup_metrics.csv", index=False)
     with open(OUT_DIR / "bias_audit.json", "w", encoding="utf-8") as f:
         json.dump(groups, f, indent=2)
     for g in groups:
-        LOGGER.info("%s", g)    
+        LOGGER.info("%s", g)
+
+
 if __name__ == "__main__":
     main()

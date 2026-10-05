@@ -23,12 +23,12 @@ def test_split_counts():
     val_data = read_jsonl(val_path)
     test_data = read_jsonl(test_path)
 
-    assert len(train_data) == 180
-    assert len(val_data) == 24
-    assert len(test_data) == 24
+    assert len(train_data) == 723
+    assert len(val_data) == 84
+    assert len(test_data) == 96
 
     total_records = len(train_data) + len(val_data) + len(test_data)
-    assert total_records == 228
+    assert total_records == 903
 
 
 def test_no_id_overlap():
@@ -45,13 +45,13 @@ def test_no_id_overlap():
     assert val_ids & test_ids == set()
 
     all_ids = train_ids | val_ids | test_ids
-    assert len(all_ids) == 228
+    assert len(all_ids) == 903
 
 
 def test_prompt_variants():
     context_text = "Sample background context."
     question_text = "What is the final conclusion?"
-    
+
     variants = build_prompt_variants(context_text, question_text)
 
     assert len(variants) == 3
@@ -71,11 +71,25 @@ def test_metrics():
         "topic": "mt1",
         "target": "The North region has the highest sales.",
     }
-
+    cb3_region = {
+        "topic": "cb3_region",
+        "target": "Conclusion: Women are more likely to buy hat",
+    }
+    assert conclusion_correct("Women are more likely to buy hat", cb3_region) is True
+    assert conclusion_correct("Men are more likely to buy hat", cb3_region) is False
     assert percent_recall("Men 3.8% vs women 4.7%", cb3["target"]) == 1.0
 
     assert conclusion_correct("Women are more likely to buy Sandals", cb3) is True
-    assert conclusion_correct("Therefore, more men than women bought Sandals.", cb3) is False
+    assert (
+        conclusion_correct("Therefore, more men than women bought Sandals.", cb3)
+        is False
+    )
 
     assert conclusion_correct("The North region has the highest sales.", mt1) is True
-    assert conclusion_correct("The South region has the highest sales and the North region the lowest.", mt1) is False
+    assert (
+        conclusion_correct(
+            "The South region has the highest sales and the North region the lowest.",
+            mt1,
+        )
+        is False
+    )

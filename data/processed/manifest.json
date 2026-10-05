@@ -1,19 +1,19 @@
 {
   "seed": 42,
   "groups": {
-    "train": 240,
-    "validation": 30,
-    "test": 31
+    "train": 241,
+    "validation": 28,
+    "test": 32
   },
   "records": [
     {
-      "train": 720
+      "train": 723
     },
     {
-      "validation": 90
+      "validation": 84
     },
     {
-      "test": 93
+      "test": 96
     }
   ],
   "total_records": 903

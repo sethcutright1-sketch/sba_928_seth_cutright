@@ -20,7 +20,7 @@ def conclusion_correct(reply, record):
     target = record["target"].lower()
     topic = record["topic"]
 
-    if topic == "cb3":
+    if topic in ["cb3", "cb3_region", "cb3_age"]:
         if "women are more likely" in target:
             return "women are more likely" in text
         if "men are more likely" in target:

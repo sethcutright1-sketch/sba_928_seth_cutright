@@ -45,7 +45,7 @@ def main() -> None:
                     "target": record["target"],
                     "percent_recall": percent_recall(reply, record["target"]),
                     "correct": conclusion_correct(reply, record),
-                    }
+                }
                 f.write(json.dumps(row) + "\n")
                 rows.append(row)
             LOGGER.info("done %s", record["record_id"])
@@ -56,11 +56,14 @@ def main() -> None:
         summary[variant] = {
             "records": len(variant_rows),
             "correct": sum(r["correct"] for r in variant_rows),
-            "avg_percent_recall": sum(r["percent_recall"] for r in variant_rows) / len(variant_rows),
+            "avg_percent_recall": sum(r["percent_recall"] for r in variant_rows)
+            / len(variant_rows),
         }
 
     with open(OUT_DIR / "prompt_summary.json", "w", encoding="utf-8") as f:
         json.dump(summary, f, indent=2)
     LOGGER.info("summary: %s", summary)
+
+
 if __name__ == "__main__":
     main()

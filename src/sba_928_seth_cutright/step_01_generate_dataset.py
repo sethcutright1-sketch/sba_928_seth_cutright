@@ -157,13 +157,13 @@ def main() -> None:
     cb3_region_questions = [
         "What percentage of men, and what percentage of women, bought {item} in the {region} region?",
         "Did more men or women buy {item} in the {region} region?",
-        "Comparing men versus women, who was more likely to buy {item} in the {region} region?"
+        "Comparing men versus women, who was more likely to buy {item} in the {region} region?",
     ]
-    
+
     cb3_age_questions = [
         "What percentage of men, and what percentage of women, who are {age} bought {item}?",
         "Did more men or women who are {age} buy {item}?",
-        "Comparing men versus women, who was more likely to buy {item} when aged {age}?"
+        "Comparing men versus women, who was more likely to buy {item} when aged {age}?",
     ]
 
     groups = [
@@ -183,24 +183,40 @@ def main() -> None:
         for region in ["Northeast", "South", "West", "Midwest"]:
             region_df = df[df["Region"] == region]
             groups.append(
-                ("cb3_region", [t.format(item=item, region=region) for t in cb3_region_questions], answer_cb3(region_df, item))
+                (
+                    "cb3_region",
+                    [t.format(item=item, region=region) for t in cb3_region_questions],
+                    answer_cb3(region_df, item),
+                )
             )
         for age in ["18-29", "30-39", "40-49", "50-59", "60-70"]:
             age_df = df[df["Age Group"] == age]
             groups.append(
-                ("cb3_age", [t.format(item=item, age=age) for t in cb3_age_questions], answer_cb3(age_df, item))
+                (
+                    "cb3_age",
+                    [t.format(item=item, age=age) for t in cb3_age_questions],
+                    answer_cb3(age_df, item),
+                )
             )
 
     rng = random.Random(42)
-    rng.shuffle(groups)
+    train_groups, val_groups, test_groups = [], [], []
 
-    train_end = int(len(groups) * 0.8)
-    val_end = int(len(groups) * 0.9)
+    by_topic = {}
+    for group in groups:
+        topic = group[0]
+        by_topic.setdefault(topic, []).append(group)
 
-    train_groups = groups[:train_end]
-    val_groups = groups[train_end:val_end]
-    test_groups = groups[val_end:]
-
+    for topic, topic_groups in by_topic.items():
+        if len(topic_groups) < 10:
+            train_groups.extend(topic_groups)
+            continue
+        rng.shuffle(topic_groups)
+        train_end = int(len(topic_groups) * 0.8)
+        val_end = int(len(topic_groups) * 0.9)
+        train_groups.extend(topic_groups[:train_end])
+        val_groups.extend(topic_groups[train_end:val_end])
+        test_groups.extend(topic_groups[val_end:])
     LOGGER.info(
         "groups: train %d, validation %d, test %d",
         len(train_groups),

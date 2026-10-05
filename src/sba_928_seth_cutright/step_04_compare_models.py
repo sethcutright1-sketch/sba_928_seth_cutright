@@ -22,7 +22,7 @@ LOGGER = logging.getLogger(__name__)
 
 def run_model(model, tokenizer, records):
     """Run the model on the given records and generate replies."""
-    return [generate_reply(model, tokenizer, r["messages"][: 2]) for r in records]
+    return [generate_reply(model, tokenizer, r["messages"][:2]) for r in records]
 
 
 def main() -> None:
@@ -36,22 +36,35 @@ def main() -> None:
     base_replies = run_model(base_model, tokenizer, records)
     LOGGER.info("base model done")
 
-    tuned_model, tokenizer = load_tuned_model(model_name=MODEL_NAME, adapter_dir=ADAPTER_DIR)
+    tuned_model, tokenizer = load_tuned_model(
+        model_name=MODEL_NAME, adapter_dir=ADAPTER_DIR
+    )
     tuned_replies = run_model(tuned_model, tokenizer, records)
-    LOGGER.info("tuned model done") 
-
+    LOGGER.info("tuned model done")
 
     summary = {
         "test_records": len(records),
-        "base_correct": sum(conclusion_correct(r, rec) for r, rec in zip(base_replies, records)),
-        "tuned_correct": sum(conclusion_correct(r, rec) for r, rec in zip(tuned_replies, records)),
-        "base_avg_percent_recall": sum(percent_recall(r, rec["target"]) for r, rec in zip(base_replies, records)) / len(records),
-        "tuned_avg_percent_recall": sum(percent_recall(r, rec["target"]) for r, rec in zip(tuned_replies, records)) / len(records),
+        "base_correct": sum(
+            conclusion_correct(r, rec) for r, rec in zip(base_replies, records)
+        ),
+        "tuned_correct": sum(
+            conclusion_correct(r, rec) for r, rec in zip(tuned_replies, records)
+        ),
+        "base_avg_percent_recall": sum(
+            percent_recall(r, rec["target"]) for r, rec in zip(base_replies, records)
+        )
+        / len(records),
+        "tuned_avg_percent_recall": sum(
+            percent_recall(r, rec["target"]) for r, rec in zip(tuned_replies, records)
+        )
+        / len(records),
     }
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     with open(OUT_DIR / "model_comparison.jsonl", "w", encoding="utf-8") as f:
-        for record, base_reply, tuned_reply in zip(records, base_replies, tuned_replies):
+        for record, base_reply, tuned_reply in zip(
+            records, base_replies, tuned_replies
+        ):
             row = {
                 "record_id": record["record_id"],
                 "topic": record["topic"],
@@ -72,6 +85,7 @@ def main() -> None:
     LOGGER.info("summary: %s", summary)
 
     LOGGER.info("Summary: %s", summary)
+
 
 if __name__ == "__main__":
     main()
