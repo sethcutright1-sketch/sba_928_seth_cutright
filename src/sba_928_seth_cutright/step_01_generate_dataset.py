@@ -154,6 +154,18 @@ def main() -> None:
         "How does the ratio of discounted merchandise compare across each brand's total inventory?",
     ]
 
+    cb3_region_questions = [
+        "What percentage of men, and what percentage of women, bought {item} in the {region} region?",
+        "Did more men or women buy {item} in the {region} region?",
+        "Comparing men versus women, who was more likely to buy {item} in the {region} region?"
+    ]
+    
+    cb3_age_questions = [
+        "What percentage of men, and what percentage of women, who are {age} bought {item}?",
+        "Did more men or women who are {age} buy {item}?",
+        "Comparing men versus women, who was more likely to buy {item} when aged {age}?"
+    ]
+
     groups = [
         ("ca3", ca3_questions, answer_ca3(adidas, nike)),
     ]
@@ -167,6 +179,17 @@ def main() -> None:
         groups.append(
             ("mt1", [t.format(item=item) for t in mt1_questions], answer_mt1(df, item))
         )
+
+        for region in ["Northeast", "South", "West", "Midwest"]:
+            region_df = df[df["Region"] == region]
+            groups.append(
+                ("cb3_region", [t.format(item=item, region=region) for t in cb3_region_questions], answer_cb3(region_df, item))
+            )
+        for age in ["18-29", "30-39", "40-49", "50-59", "60-70"]:
+            age_df = df[df["Age Group"] == age]
+            groups.append(
+                ("cb3_age", [t.format(item=item, age=age) for t in cb3_age_questions], answer_cb3(age_df, item))
+            )
 
     rng = random.Random(42)
     rng.shuffle(groups)
