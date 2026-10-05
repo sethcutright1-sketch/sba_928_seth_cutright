@@ -31,7 +31,7 @@ Run every command from the project root (the folder with `pyproject.toml`), in t
 
 | Step | Command | Creates |
 |---|---|---|
-| 1. Generate + split the dataset | `uv run python -m sba_928_seth_cutright.step_01_generate_dataset` | `data/processed/` train (180) / validation (24) / test (24) + `manifest.json` |
+| 1. Generate + split the dataset | `uv run python -m sba_928_seth_cutright.step_01_generate_dataset` | `data/processed/` train (723) / validation (84) / test (96) + `manifest.json` (split 80/10/10 per topic, seed 42) |
 | 2. Prompt engineering (base model, no training) | `uv run python -m sba_928_seth_cutright.step_02_prompt_engineering` | `artifacts/prompt_baseline/` |
 | 3. LoRA fine-tuning | `uv run python -m sba_928_seth_cutright.step_03_fine_tune` | `artifacts/models/qwen-sba-928/` |
 | 4. Base vs. tuned on the test split | `uv run python -m sba_928_seth_cutright.step_04_compare_models` | `artifacts/evaluation/` |
@@ -49,7 +49,7 @@ uv run pytest
 uv run ruff check .
 ```
 
-- `pytest`: split sizes, no record ID in two splits, prompt variants are distinct, and the scoring functions (including a regression check for a fixed scorer bug).
+- `pytest`: split sizes, no record ID in two splits, prompt variants are distinct, and the scoring functions (including regression checks for a fixed scorer bug and for scoring the region/age gender questions).
 - `ruff`: style and common Python errors.
 
 ## Project structure
@@ -71,11 +71,22 @@ docs/                          written report
 
 | | Correct conclusions | Percentages quoted |
 |---|---|---|
-| Best prompt variant, base model (validation) | 1 / 12 | 54% |
-| Base model (test) | 3 / 24 | 54% |
-| **Fine-tuned model (test)** | **16 / 24** | **100%** |
+| Best prompt variant, base model (validation, v1 data) | 1 / 12 | 54% |
+| Base model (test) | 7 / 96 | 36% |
+| **Fine-tuned model (test)** | **77 / 96** | **97%** |
 
-Fine-tuning worked much better than prompting, but it ignored women.
+### Bias audit: men vs. women questions, before and after mitigation
+
+The first version (v1, git tag [`v1-before-mitigation`](https://github.com/sethcutright1-sketch/sba_928_seth_cutright/tree/v1-before-mitigation)) never concluded "women are more likely." It had only 9 training examples with that answer. Version 2 adds gender comparisons within each region and age group, which gives many different, naturally balanced examples, and splits train/validation/test separately for each topic (stratified).
+
+| Correct answer | v1 tuned (training examples) | v2 tuned (training examples) |
+|---|---|---|
+| Women more likely | **0 / 6** (9) | **21 / 24** (210) |
+| Men more likely | 3 / 3 (15) | 23 / 27 (204) |
+| Similar rate | 3 / 3 (27) | 19 / 27 (186) |
+| All test questions | 16 / 24 | 77 / 96 |
+
+Fine-tuning worked much better than prompting. However, fine-tuning can cause problems of its own if not done right. For example, the model says "there are about 2x more subscribers than non-subscribers buying Boots," because that sentence was a constant in the training answers. I plan on fixing this.
 
 Full analysis: see the report in `docs/`.
 
